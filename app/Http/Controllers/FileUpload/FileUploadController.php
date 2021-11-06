@@ -42,25 +42,21 @@ class FileUploadController extends Controller {
                         'language' => $lan,
                         'created_at' => date('Y-m-d H:i:s'),
                     ]);
-
-                    return response()->json([
-                        'status' => '200',
-                        'message' => 'uploaded',
-                    ]);
                 }
-
-                return response()->json([
-                    'status' => '200',
-                ]);
             }
 
-
-        }catch(\Exception $exception) {
             return response()->json([
                 'status' => '200',
-                'message' => 'uploaded'
+                'fileNames' => $file_names
             ]);
-        }
+
+
+       }catch(\Exception $exception) {
+           return response()->json([
+               'status' => '500',
+               'error' => 'uploaded'
+           ], 500);
+       }
     }
 
     public function checkNullValue($response, $key) {
@@ -77,7 +73,10 @@ class FileUploadController extends Controller {
             $files = explode(" ", $name);
 
             $finalResponse = [];
-            $columns = array("Unique Id", "Created at", "language","DIS", "DS", "GN" , "Respondent Name");
+            $columns = array(
+                "Unique Id", "Created at", "language","DIS", "DS", "GN" , "Respondent Name", "Respondent Contact",
+                "Respondent Address"
+            );
             $data = (object)[];
 
 
@@ -92,6 +91,8 @@ class FileUploadController extends Controller {
                 $data->DS = $this->checkNullValue($jsonData[0], 'DS');
                 $data->GN = $this->checkNullValue($jsonData[0], 'GN');
                 $data->respondent_name = $this->checkNullValue($jsonData[0], 'respondentName');
+                $data->contact_number = $this->checkNullValue($jsonData[0], 'respondentContact');
+                $data->address = $this->checkNullValue($jsonData[0], 'respondentAddress');
 
                 unset($jsonData[0]);
 
@@ -111,12 +112,12 @@ class FileUploadController extends Controller {
 
             return Excel::download($export , 'all_surveys.xlsx');
 
-        }catch(\Exception $error) {
-            return response()->json([
-                "status" => "500",
-                "message" => "Something went wrong"
-            ], 500);
-        }
+       }catch(\Exception $error) {
+           return response()->json([
+               "status" => "500",
+               "message" => "Something went wrong"
+           ], 500);
+       }
 
     }
 
@@ -125,7 +126,10 @@ class FileUploadController extends Controller {
 
             $files = Storage::allFiles("surveys");
             $finalResponse = [];
-            $columns = array("Unique Id", "Created at", "language", "DIS", "DS", "GN", "Respondent Name");
+            $columns = array(
+                "Unique Id", "Created at", "language","DIS", "DS", "GN" , "Respondent Name", "Respondent Contact",
+                "Respondent Address"
+            );
             $data = (object)[];
 
 
@@ -140,6 +144,8 @@ class FileUploadController extends Controller {
                 $data->DS = $this->checkNullValue($jsonData[0], 'DS');
                 $data->GN = $this->checkNullValue($jsonData[0], 'GN');
                 $data->respondent_name = $this->checkNullValue($jsonData[0], 'respondentName');
+                $data->contact_number = $this->checkNullValue($jsonData[0], 'respondentContact');
+                $data->address = $this->checkNullValue($jsonData[0], 'respondentAddress');
 
                 unset($jsonData[0]);
 
