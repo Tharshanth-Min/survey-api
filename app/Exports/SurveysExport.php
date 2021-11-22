@@ -2,12 +2,15 @@
 
 namespace App\Exports;
 
+use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
-class SurveysExport implements FromArray, WithHeadings, ShouldAutoSize {
+class SurveysExport implements FromArray, WithHeadings, ShouldAutoSize, ShouldQueue {
+
+    use Exportable;
 
     protected $survey;
     protected $headings;
@@ -24,17 +27,9 @@ class SurveysExport implements FromArray, WithHeadings, ShouldAutoSize {
         return $this->survey;
     }
 
-    public function styles(Worksheet $sheet)
-    {
-        return [
-            // Style the first row as bold text.
-            1    => ['font' => ['bold' => true]],
-        ];
-    }
 
     public function headings(): array {
         return $this->headings;
 
     }
 }
-

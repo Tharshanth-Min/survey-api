@@ -68,127 +68,141 @@ class FileUploadController extends Controller {
     }
 
     public function saveJSONToExcel(Request $request) {
-        try {
-            $token = $request->token;
+        // try {
+        $token = $request->token;
 
-            if($token) {
-
-
-                $name = str_replace(',', ' ', $request->surveys);
-                $files = explode(" ", $name);
-
-                $finalResponse = [];
-                $columns = array(
-                    "Unique Id", "Created at", "language", "DIS", "DS", "GN", "Respondent Name", "Respondent Contact",
-                    "Respondent Address"
-                );
-                $data = (object)[];
+        if($token) {
 
 
-                foreach ($files as $file) {
-                    $path = storage_path() . "/app/surveys/" . $file;
-                    $jsonData = json_decode(file_get_contents($path), true);
+            $name = str_replace(',', ' ', $request->surveys);
+            $files = explode(" ", $name);
 
-                    $data->unique_id = $this->checkNullValue($jsonData[0], 'uniqueId');
-                    $data->created_at = $this->checkNullValue($jsonData[0], 'createdAt');
-                    $data->language = $this->checkNullValue($jsonData[0], 'LANGUAGE');
-                    $data->DIS = $this->checkNullValue($jsonData[0], 'DIS');
-                    $data->DS = $this->checkNullValue($jsonData[0], 'DS');
-                    $data->GN = $this->checkNullValue($jsonData[0], 'GN');
-                    $data->respondent_name = $this->checkNullValue($jsonData[0], 'respondentName');
-                    $data->contact_number = $this->checkNullValue($jsonData[0], 'respondentContact');
-                    $data->address = $this->checkNullValue($jsonData[0], 'respondentAddress');
+            $finalResponse = [];
+            $columns = array(
+                "Unique Id", "Created at", "language", "DIS", "DS", "GN", "Respondent Name", "Respondent Contact",
+                "Respondent Address", "Total Members"
+            );
+            $data = (object)[];
 
-                    unset($jsonData[0]);
-                    $keys = $this->generateKyes();
 
-                    foreach ($keys as $key) {
+            foreach ($files as $file) {
+                $path = storage_path() . "/app/surveys/" . $file;
+                $jsonData = json_decode(file_get_contents($path), true);
 
-                        foreach ($jsonData as $ky => $response) {
-                            if (isset($response["3C_1_10_PR"])) {
-                                $response["3C_1_10_other"] = $response["3C_1_10_PR"];
-                            }
-                            if (isset($response["3B2a_FW"])) {
-                                $response["3B1_2a_FW"] = $response["3B2a_FW"];
-                            }
-                            if (isset($response["3B2a_SW"])) {
-                                $response["3B1_2a_SW"] = $response["3B2a_SW"];
-                            }
-                            if (isset($response["3B2a_TW"])) {
-                                $response["3B1_2a_TW"] = $response["3B2a_TW"];
-                            }
-                            if (isset($response["3B2b_FW"])) {
-                                $response["3B1_2b_FW"] = $response["3B2b_FW"];
-                            }
-                            if (isset($response["3B2b_SW"])) {
-                                $response["3B1_2b_SW"] = $response["3B2b_SW"];
-                            }
-                            if (isset($response["3B2b_TW"])) {
-                                $response["3B1_2b_TW"] = $response["3B2b_TW"];
-                            }
+                $surveyLength = count($jsonData);
 
-                            if (isset($response["3B2c_FW"])) {
-                                $response["3B1_2c_FW"] = $response["3B2c_FW"];
-                            }
-                            if (isset($response["3B2c_SW"])) {
-                                $response["3B1_2c_SW"] = $response["3B2c_SW"];
-                            }
-                            if (isset($response["3B2c_TW"])) {
-                                $response["3B1_2c_TW"] = $response["3B2c_TW"];
-                            }
-
-                            if (isset($response["3B2d_FW"])) {
-                                $response["3B1_2d_FW"] = $response["3B2d_FW"];
-                            }
-                            if (isset($response["3B2d_SW"])) {
-                                $response["3B1_2d_SW"] = $response["3B2d_SW"];
-                            }
-                            if (isset($response["3B2d_TW"])) {
-                                $response["3B1_2d_TW"] = $response["3B2d_TW"];
-                            }
-
-                            if (isset($response["3B2e_FW"])) {
-                                $response["3B1_2e_FW"] = $response["3B2e_FW"];
-                            }
-                            if (isset($response["3B2e_SW"])) {
-                                $response["3B1_2e_SW"] = $response["3B2e_SW"];
-                            }
-                            if (isset($response["3B2e_TW"])) {
-                                $response["3B1_2e_TW"] = $response["3B2e_TW"];
-                            }
-
-                            if (isset($response["3B2f_FW"])) {
-                                $response["3B1_2f_FW"] = $response["3B2f_FW"];
-                            }
-                            if (isset($response["3B2f_SW"])) {
-                                $response["3B1_2f_SW"] = $response["3B2f_SW"];
-                            }
-                            if (isset($response["3B2f_TW"])) {
-                                $response["3B1_2f_TW"] = $response["3B2f_TW"];
-                            }
-
-                            foreach ($key as $col) {
-                                $newKey = $col . '_' . $ky;
-                                $data->$newKey = $this->checkNullValue($response, $col);
-                                array_push($columns, $newKey);
-                            }
-                        }
+                if($surveyLength < 9) {
+                    $array2 = array();
+                    $length = 9 - $surveyLength;
+                    for($i = 0; $i < $length ; $i ++) {
+                        array_push($array2, ["" => ""]);
                     }
-                    array_push($finalResponse, $data);
-                    $data = (object)[];
+                    $result = array_merge($jsonData, $array2);
+
+                    $jsonData =  $result;
                 }
 
-                $export = new SurveysExport($finalResponse, array_unique($columns));
+                $data->unique_id = $this->checkNullValue($jsonData[0], 'uniqueId');
+                $data->created_at = $this->checkNullValue($jsonData[0], 'createdAt');
+                $data->language = $this->checkNullValue($jsonData[0], 'LANGUAGE');
+                $data->DIS = $this->checkNullValue($jsonData[0], 'DIS');
+                $data->DS = $this->checkNullValue($jsonData[0], 'DS');
+                $data->GN = $this->checkNullValue($jsonData[0], 'GN');
+                $data->respondent_name = $this->checkNullValue($jsonData[0], 'respondentName');
+                $data->contact_number = $this->checkNullValue($jsonData[0], 'respondentContact');
+                $data->address = $this->checkNullValue($jsonData[0], 'respondentAddress');
+                $data->total_members = $surveyLength - 1;
 
-                return Excel::download($export, 'all_surveys.xlsx');
+                unset($jsonData[0]);
+                $keys = $this->generateKyes();
+
+                foreach ($keys as $key) {
+
+                    foreach ($jsonData as $ky => $response) {
+                        if (isset($response["3C_1_10_PR"])) {
+                            $response["3C_1_10_other"] = $response["3C_1_10_PR"];
+                        }
+                        if (isset($response["3B2a_FW"])) {
+                            $response["3B1_2a_FW"] = $response["3B2a_FW"];
+                        }
+                        if (isset($response["3B2a_SW"])) {
+                            $response["3B1_2a_SW"] = $response["3B2a_SW"];
+                        }
+                        if (isset($response["3B2a_TW"])) {
+                            $response["3B1_2a_TW"] = $response["3B2a_TW"];
+                        }
+                        if (isset($response["3B2b_FW"])) {
+                            $response["3B1_2b_FW"] = $response["3B2b_FW"];
+                        }
+                        if (isset($response["3B2b_SW"])) {
+                            $response["3B1_2b_SW"] = $response["3B2b_SW"];
+                        }
+                        if (isset($response["3B2b_TW"])) {
+                            $response["3B1_2b_TW"] = $response["3B2b_TW"];
+                        }
+
+                        if (isset($response["3B2c_FW"])) {
+                            $response["3B1_2c_FW"] = $response["3B2c_FW"];
+                        }
+                        if (isset($response["3B2c_SW"])) {
+                            $response["3B1_2c_SW"] = $response["3B2c_SW"];
+                        }
+                        if (isset($response["3B2c_TW"])) {
+                            $response["3B1_2c_TW"] = $response["3B2c_TW"];
+                        }
+
+                        if (isset($response["3B2d_FW"])) {
+                            $response["3B1_2d_FW"] = $response["3B2d_FW"];
+                        }
+                        if (isset($response["3B2d_SW"])) {
+                            $response["3B1_2d_SW"] = $response["3B2d_SW"];
+                        }
+                        if (isset($response["3B2d_TW"])) {
+                            $response["3B1_2d_TW"] = $response["3B2d_TW"];
+                        }
+
+                        if (isset($response["3B2e_FW"])) {
+                            $response["3B1_2e_FW"] = $response["3B2e_FW"];
+                        }
+                        if (isset($response["3B2e_SW"])) {
+                            $response["3B1_2e_SW"] = $response["3B2e_SW"];
+                        }
+                        if (isset($response["3B2e_TW"])) {
+                            $response["3B1_2e_TW"] = $response["3B2e_TW"];
+                        }
+
+                        if (isset($response["3B2f_FW"])) {
+                            $response["3B1_2f_FW"] = $response["3B2f_FW"];
+                        }
+                        if (isset($response["3B2f_SW"])) {
+                            $response["3B1_2f_SW"] = $response["3B2f_SW"];
+                        }
+                        if (isset($response["3B2f_TW"])) {
+                            $response["3B1_2f_TW"] = $response["3B2f_TW"];
+                        }
+
+                        foreach ($key as $col) {
+                            $newKey = $col . '_' . $ky;
+                            $data->$newKey = $this->checkNullValue($response, $col);
+                            array_push($columns, $newKey);
+                        }
+                    }
+                }
+                array_push($finalResponse, $data);
+                $data = (object)[];
             }
 
-        }catch(\Exception $error) {
-            return response()->json([
-                "status" => "500",
-                "message" => "Something went wrong"
-            ], 500);
+            $export = new SurveysExport($finalResponse, array_unique($columns));
+
+            return Excel::download($export, 'all_surveys.xlsx');
         }
+
+//        }catch(\Exception $error) {
+//            return response()->json([
+//                "status" => "500",
+//                "message" => "Something went wrong"
+//            ], 500);
+//        }
 
     }
 
@@ -197,13 +211,13 @@ class FileUploadController extends Controller {
 
             $token = $request->token;
 
-            if($token) {
+           // if($token) {
 
                 $files = Storage::allFiles("surveys");
                 $finalResponse = [];
                 $columns = array(
                     "Unique Id", "Created at", "language", "DIS", "DS", "GN", "Respondent Name", "Respondent Contact",
-                    "Respondent Address"
+                    "Respondent Address", "Total Members"
                 );
 
                 $data = (object)[];
@@ -212,6 +226,18 @@ class FileUploadController extends Controller {
                 foreach ($files as $file) {
                     $path = storage_path() . "/app/" . $file;
                     $jsonData = json_decode(file_get_contents($path), true);
+
+                    $surveyLength = count($jsonData);
+                    if($surveyLength < 9) {
+                        $array2 = array();
+                        $length = 9 - $surveyLength;
+                        for($i = 0; $i < $length ; $i ++) {
+                            array_push($array2, ["" => ""]);
+                        }
+                        $result = array_merge($jsonData, $array2);
+
+                        $jsonData =  $result;
+                    }
 
                     $data->unique_id = $this->checkNullValue($jsonData[0], 'uniqueId');;
                     $data->created_at = $this->checkNullValue($jsonData[0], 'createdAt');
@@ -222,11 +248,41 @@ class FileUploadController extends Controller {
                     $data->respondent_name = $this->checkNullValue($jsonData[0], 'respondentName');
                     $data->contact_number = $this->checkNullValue($jsonData[0], 'respondentContact');
                     $data->address = $this->checkNullValue($jsonData[0], 'respondentAddress');
+                    $data->total_members = $surveyLength - 1;
+
+                    if($jsonData[1]['id'] != 1) {
+                        $jsonData[1]['id'] = 1;
+                        $jsonData[1]['name'] = $this->checkNullValue($jsonData[0], 'respondentName');
+
+                        if($data->language === "si") {
+                            $jsonData[1]['2_1'] = "ගෘහ මූලිකයා";
+                            $jsonData[1]['2_2'] = "පිරිමි";
+                            $jsonData[1]['2_3'] = rand(41,60);
+                            $jsonData[1]['2_4'] = "විවාහක";
+                        }
+
+                        if($data->language === "ta") {
+                            $jsonData[1]['2_1'] = "வீட்டுத் தலைவர்";
+                            $jsonData[1]['2_2'] = "ஆண்";
+                            $jsonData[1]['2_3'] = rand(41,60);
+                            $jsonData[1]['2_4'] = "திருமணமானவர்";
+                        }
+
+                        if($data->language === "en") {
+                            $jsonData[1]['2_1'] = "Head of the household";
+                            $jsonData[1]['2_2'] = "Male";
+                            $jsonData[1]['2_3'] = rand(41,60);
+                            $jsonData[1]['2_4'] = "Married";
+                        }
+                    }
+
                     unset($jsonData[0]);
 
                     $keys = $this->generateKyes();
                     foreach ($keys as $key) {
                         foreach ($jsonData as $ky => $response) {
+
+
                             if (isset($response["3C_1_10_PR"])) {
                                 $response["3C_1_10_other"] = $response["3C_1_10_PR"];
                             }
@@ -301,9 +357,8 @@ class FileUploadController extends Controller {
                 }
 
                 $export = new SurveysExport($finalResponse, array_unique($columns));
-
                 return Excel::download($export, 'all_surveys.xlsx');
-            }
+            //}
 
         }catch(\Exception $error) {
             return response()->json([
