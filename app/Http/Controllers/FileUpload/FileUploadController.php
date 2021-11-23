@@ -216,7 +216,7 @@ class FileUploadController extends Controller {
                 $files = Storage::allFiles("surveys");
                 $finalResponse = [];
                 $columns = array(
-                    "Unique Id", "Created at", "language", "DIS", "DS", "GN", "Respondent Name", "Respondent Contact",
+                    "Unique Id", "Interviewer Id", "Created at", "language", "DIS", "DS", "GN", "Respondent Name", "Respondent Contact",
                     "Respondent Address", "Total Members"
                 );
 
@@ -239,7 +239,10 @@ class FileUploadController extends Controller {
                         $jsonData =  $result;
                     }
 
-                    $data->unique_id = $this->checkNullValue($jsonData[0], 'uniqueId');;
+                    $userId = substr($this->checkNullValue($jsonData[0], 'uniqueId'), 3, 2);
+
+                    $data->unique_id = $this->checkNullValue($jsonData[0], 'uniqueId');
+                    $data->user_id = 'INT'. str_replace('/', '', $userId);
                     $data->created_at = $this->checkNullValue($jsonData[0], 'createdAt');
                     $data->language = $this->checkNullValue($jsonData[0], 'LANGUAGE');
                     $data->DIS = $this->checkNullValue($jsonData[0], 'DIS');
@@ -344,6 +347,11 @@ class FileUploadController extends Controller {
                             if (isset($response["3B2f_TW"])) {
                                 $response["3B1_2f_TW"] = $response["3B2f_TW"];
                             }
+
+                            if (isset($response["3D_1_AOINFO"])) {
+                                $response["3D_AOINFO"] = $response["3D_1_AOINFO"];
+                            }
+
 
                             foreach ($key as $col) {
                                 $newKey = $col . '_' . $ky;
@@ -474,6 +482,7 @@ class FileUploadController extends Controller {
                 "3A2_3a",
                 "3A2_3b",
                 "3A2_3c",
+                "3A2_3d",
                 "3A2_3_AOINFO"
             ],
             [
@@ -547,7 +556,10 @@ class FileUploadController extends Controller {
                 "3B2_1_TW",
                 "3B2_1_TW_3B2_2_FW",
                 "3B2_1_TW_3B2_2_SW",
-                "3B2_1_TW_3B2_2_TW"
+                "3B2_1_TW_3B2_2_TW",
+
+                "3B2_2_AOINFO"
+
             ],
             [
                 "3C_1_1_PR",
@@ -603,8 +615,8 @@ class FileUploadController extends Controller {
                 "3C_2_1_SW",
                 "3C_2_1_TW",
 
-                "3C_2_2_FW",
                 "3C_2_2_PR",
+                "3C_2_2_FW",
                 "3C_2_2_SW",
                 "3C_2_2_TW",
 
@@ -641,8 +653,8 @@ class FileUploadController extends Controller {
                 "3C_3_1_SW",
                 "3C_3_1_TW",
 
-                "3C_3_2_FW",
                 "3C_3_2_PR",
+                "3C_3_2_FW",
                 "3C_3_2_SW",
                 "3C_3_2_TW",
 
@@ -665,8 +677,8 @@ class FileUploadController extends Controller {
                 "3C_4_2_TW",
 
                 "3C_4_3_PR",
-                "3C_4_3_SW",
                 "3C_4_3_FW",
+                "3C_4_3_SW",
                 "3C_4_3_TW",
 
                 "3C_4_4_PR",
@@ -774,7 +786,8 @@ class FileUploadController extends Controller {
                 "3D_2",
                 "3D_3",
                 "3D_4",
-                "3D_5"
+                "3D_5",
+                "3D_1_AOINFO"
             ],
             [
                 "4D_1_1",
