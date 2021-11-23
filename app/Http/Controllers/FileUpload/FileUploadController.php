@@ -501,6 +501,7 @@ class FileUploadController extends Controller {
                 "3A3_2d",
                 "3A3_2e",
 
+                "3A3_1_AOINFO",
                 "3A3_2_AOINFO"
             ],
             [
@@ -746,6 +747,8 @@ class FileUploadController extends Controller {
                 "3C_5_2_5_PR",
                 "3C_5_2_5_FW",
                 "3C_5_2_5_SW",
+                "3C_5_2_5_TW",
+                
                 "3C_5_2_6_PR",
                 "3C_5_2_6_FW",
                 "3C_5_2_6_SW",
